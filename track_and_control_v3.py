@@ -13,7 +13,7 @@ os.chdir("/home/suleyman/scripts")
 # Initialize PCA9685
 i2c = busio.I2C(board.SCL, board.SDA)
 pca = PCA9685(i2c)
-pca.frequency = 100
+pca.frequency = 490
 
 # Right motor BOARD = 11,12
 r1 = digitalio.DigitalInOut(board.D17)
@@ -64,19 +64,27 @@ def stop():
 	l2.value=False
 
 def right():
+	pca.channels[0].duty_cycle = 0x1fff
+
 	pca.channels[4].duty_cycle = 0x4fff
 	pca.channels[5].duty_cycle = 0x8fff
 
 def left():
+	pca.channels[0].duty_cycle = 0x4fff
+
 	pca.channels[4].duty_cycle = 0x8fff
 	pca.channels[5].duty_cycle = 0x4fff
 
 def speed_up():
+	pca.channels[0].duty_cycle = 0xffff
+
 	pca.channels[4].duty_cycle = 0x8fff
 	pca.channels[5].duty_cycle = 0x8fff
 
 # speed down behaves like backward
 def speed_down():
+	pca.channels[0].duty_cycle = 0x0000
+
 	pca.channels[4].duty_cycle = 0x2fff
 	pca.channels[5].duty_cycle = 0x2fff
 
@@ -147,6 +155,7 @@ while True:
 		if edge > right_thr:
 			print("turn right")
 			cv2.putText(frame, "turn right", (420,460), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 2, cv2.LINE_AA) # BGR
+			
 			right()
 			time.sleep(0.015)
 
@@ -160,13 +169,13 @@ while True:
 			print("speed down")
 			cv2.putText(frame, "speed down", (20,460), cv2.FONT_HERSHEY_PLAIN, 2, (255,0,0), 2, cv2.LINE_AA)
 			speed_down()
-			time.sleep(0.025)
+			time.sleep(0.015)
 
 		elif area < lower_area:
 			print("speed up")
 			cv2.putText(frame, "speed up", (20,460), cv2.FONT_HERSHEY_PLAIN, 2, (255,0,0), 2, cv2.LINE_AA)
 			speed_up()
-			time.sleep(0.025)
+			time.sleep(0.015)
 
 			# print(area)
 
@@ -174,8 +183,8 @@ while True:
 			# tvec_str = "x=%4.0f y=%4.0f z=%4.0f"%(tvec[0], tvec[1], tvec[2])
 			# cv2.putText(frame, tvec_str, (20,460), cv2.FONT_HERSHEY_PLAIN, 2, (255,0,0), 2, cv2.LINE_AA)
 
-	#else :
-		#stop()
+	else :
+		stop()
 
 
 
