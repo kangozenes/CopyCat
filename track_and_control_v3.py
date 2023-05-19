@@ -3,51 +3,49 @@ import cv2
 import cv2.aruco as aruco
 import os
 import time
+import board
+import busio
+import digitalio
+from adafruit_pca9685 import PCA9685
 
-os.chdir("C:/Users/HP/PycharmProjects/pythonProject") # change to current path
+# Initialize PCA9685
+i2c = busio.I2C(board.SCL, board.SDA)
+pca = PCA9685(i2c)
+pca.frequency = 1000
+
+r1 = digitalio.DigitalInOut(board.D17)
+l1 = digitalio.DigitalInOut(board.D22)
+r1.direction = digitalio.Direction.OUTPUT
+l1.direction = digitalio.Direction.OUTPUT
+
+print("READY")
+pca.channels[0].duty_cycle = 0x8fff  # Channel 0 for ENA
+time.sleep(1)
+print("OK")
+pca.channels[0].duty_cycle = 0x0000 
 
 
-import RPi.GPIO as GPIO # THIS MAY CHANGE!!!!
-GPIO.setmode(GPIO.BOARD)
-
-
-# PIN ASSIGNMENT
-L_Forward = 35
-L_Backward = 36
-R_Forward = 37
-R_Backward = 38
-
-GPIO.setup(L_Forward, GPIO.OUT)
-GPIO.setup(L_Backward, GPIO.OUT)
-GPIO.setup(R_Forward, GPIO.OUT)
-GPIO.setup(R_Backward, GPIO.OUT)
 
 def stop():
-    GPIO.output(L_Forward, GPIO.LOW)
-    GPIO.output(L_Backward, GPIO.LOW)
-    GPIO.output(R_Forward, GPIO.LOW)
-    GPIO.output(R_Backward, GPIO.LOW)
+    r1.value = False
+    l1.value = False
 
 def right():
-    GPIO.output(L_Forward, GPIO.HIGH)
-    GPIO.output(L_Backward, GPIO.LOW)
-    GPIO.output(R_Forward, GPIO.LOW)
-    GPIO.output(R_Backward, GPIO.HIGH)
+    pca.channels[4].duty_cycle = 0x8fff
+    pca.channels[5].duty_cycle = 0xffff
 
 def left():
-    GPIO.output(L_Forward, GPIO.LOW)
-    GPIO.output(L_Backward, GPIO.HIGH)
-    GPIO.output(R_Forward, GPIO.HIGH)
-    GPIO.output(R_Backward, GPIO.LOW)
+    pca.channels[4].duty_cycle = 0xffff
+    pca.channels[5].duty_cycle = 0x8fff
 
 def speed_up():
-    GPIO.output(L_Forward, GPIO.HIGH)
-    GPIO.output(R_Forward, GPIO.HIGH)
+    pca.channels[4].duty_cycle = 0xffff
+    pca.channels[5].duty_cycle = 0xffff
 
 # speed down behaves like backward
 def speed_down():
-    GPIO.output(L_Backward, GPIO.HIGH)
-    GPIO.output(R_Backward, GPIO.HIGH) 
+    pca.channels[4].duty_cycle = 0x8fff
+    pca.channels[5].duty_cycle = 0x8fff
 
 
 # area from coordinates
